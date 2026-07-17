@@ -1,0 +1,7 @@
+---
+- name: Join Worker Nodes
+  hosts: kubernetes_workers
+  become: yes
+
+  roles:
+    - workers

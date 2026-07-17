@@ -1,0 +1,36 @@
+---
+- name: Check if Calico is already installed
+  command: kubectl get daemonset calico-node -n kube-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: calico_check
+  ignore_errors: yes
+  changed_when: false
+
+- name: Install Calico
+  command: >
+    kubectl apply -f
+    https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/calico.yaml
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: calico_check.rc != 0
+
+- name: Wait for Calico nodes
+  command: kubectl get pods -n kube-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: calico_status
+  retries: 20
+  delay: 15
+  until: "'calico-node' in calico_status.stdout and 'Running' in calico_status.stdout"
+  changed_when: false
+
+- name: Wait for CoreDNS
+  command: kubectl get pods -n kube-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  register: coredns_status
+  retries: 20
+  delay: 15
+  until: "'coredns' in coredns_status.stdout and 'Running' in coredns_status.stdout"
+  changed_when: false

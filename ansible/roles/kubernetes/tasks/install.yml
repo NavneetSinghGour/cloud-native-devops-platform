@@ -1,0 +1,17 @@
+---
+- name: Install Kubernetes packages
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+
+- name: Hold Kubernetes packages
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl

@@ -1,0 +1,23 @@
+---
+- name: Create Kubernetes keyring directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Download Kubernetes GPG key
+  shell: |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | \
+    gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /"
+    filename: kubernetes
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes

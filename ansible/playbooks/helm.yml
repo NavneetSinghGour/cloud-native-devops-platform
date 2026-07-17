@@ -1,0 +1,7 @@
+---
+- name: Install Helm
+  hosts: jenkins
+  become: yes
+
+  roles:
+    - helm

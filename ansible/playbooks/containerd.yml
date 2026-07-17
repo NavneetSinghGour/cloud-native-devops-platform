@@ -1,0 +1,7 @@
+---
+- name: Install Containerd
+  hosts: kubernetes
+  become: yes
+
+  roles:
+    - containerd

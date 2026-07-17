@@ -1,0 +1,7 @@
+---
+- name: Configure Kubernetes Master
+  hosts: kubernetes_master
+  become: yes
+
+  roles:
+    - master

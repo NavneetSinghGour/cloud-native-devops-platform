@@ -1,0 +1,9 @@
+---
+- name: Check if cluster is already initialized
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubeadm_config
+
+- name: Initialize Kubernetes cluster
+  command: kubeadm init --pod-network-cidr=192.168.0.0/16
+  when: not kubeadm_config.stat.exists

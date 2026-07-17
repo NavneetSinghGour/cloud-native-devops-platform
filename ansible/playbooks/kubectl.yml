@@ -1,0 +1,7 @@
+---
+- name: Install kubectl
+  hosts: jenkins
+  become: yes
+
+  roles:
+    - kubectl

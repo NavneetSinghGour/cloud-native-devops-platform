@@ -1,0 +1,14 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+
+# Variable files
+*.tfvars
+
+# Plan files
+*.tfplan
+
+# Crash logs
+crash.log

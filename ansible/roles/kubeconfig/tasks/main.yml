@@ -1,0 +1,33 @@
+---
+- name: Read admin.conf from Kubernetes master
+  slurp:
+    src: /etc/kubernetes/admin.conf
+  delegate_to: master
+  register: kubeconfig_file
+
+- name: Create .kube directory
+  file:
+    path: /home/ubuntu/.kube
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy kubeconfig to Jenkins
+  copy:
+    content: "{{ kubeconfig_file.content | b64decode }}"
+    dest: /home/ubuntu/.kube/config
+    owner: ubuntu
+    group: ubuntu
+    mode: '0600'
+
+- name: Verify kubectl connectivity
+  command: kubectl get nodes
+  environment:
+    KUBECONFIG: /home/ubuntu/.kube/config
+  register: kubectl_result
+  changed_when: false
+
+- name: Show kubectl output
+  debug:
+    var: kubectl_result.stdout_lines

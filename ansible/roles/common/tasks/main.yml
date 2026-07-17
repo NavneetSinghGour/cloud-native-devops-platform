@@ -1,0 +1,37 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade packages
+  apt:
+    upgrade: dist
+
+- name: Install required packages
+  apt:
+    name:
+      - curl
+      - wget
+      - git
+      - vim
+      - unzip
+      - python3-pip
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - software-properties-common
+    state: present
+
+- name: Disable swap
+  command: swapoff -a
+
+- name: Disable swap permanently
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\sswap\s.*)$'
+    replace: '# \1'
+
+- name: Set hostname
+  hostname:
+    name: "{{ inventory_hostname }}"

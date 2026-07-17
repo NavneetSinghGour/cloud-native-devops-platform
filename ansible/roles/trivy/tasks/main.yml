@@ -1,0 +1,49 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install prerequisites
+  apt:
+    name:
+      - wget
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Download Trivy GPG key
+  get_url:
+    url: https://aquasecurity.github.io/trivy-repo/deb/public.key
+    dest: /tmp/trivy.key
+    mode: '0644'
+
+- name: Convert Trivy GPG key
+  shell: |
+    gpg --dearmor -o /usr/share/keyrings/trivy.gpg /tmp/trivy.key
+  args:
+    creates: /usr/share/keyrings/trivy.gpg
+
+- name: Add Trivy repository
+  copy:
+    dest: /etc/apt/sources.list.d/trivy.list
+    content: |
+      deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main
+    mode: '0644'
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Trivy
+  apt:
+    name: trivy
+    state: present
+
+- name: Verify Trivy installation
+  command: trivy --version
+  register: trivy_version
+  changed_when: false
+
+- name: Show Trivy version
+  debug:
+    var: trivy_version.stdout

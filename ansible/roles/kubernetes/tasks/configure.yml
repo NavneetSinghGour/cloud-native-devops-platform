@@ -1,0 +1,11 @@
+---
+- name: Enable kubelet
+  systemd:
+    name: kubelet
+    enabled: yes
+
+- name: Start kubelet
+  systemd:
+    name: kubelet
+    state: started
+    enabled: yes

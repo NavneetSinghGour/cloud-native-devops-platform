@@ -1,0 +1,13 @@
+replicaCount: 2
+
+image:
+  repository: navneet2004/devops-dashboard
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+containerPort: 8080

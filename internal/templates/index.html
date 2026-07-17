@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DevOps Dashboard</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>🚀 DevOps Dashboard</h1>
+
+        <p>Cloud Native Application Monitoring Dashboard</p>
+
+    </header>
+
+    <nav>
+
+        <a href="#">Dashboard</a>
+        <a href="#">Kubernetes</a>
+        <a href="#">CI/CD</a>
+        <a href="#">Observability</a>
+        <a href="#">About</a>
+
+    </nav>
+
+    <main>
+
+        <section class="grid">
+
+            <!-- Application -->
+
+            <div class="card">
+
+                <h2>🚀 Application</h2>
+
+                <div class="item">
+                    <span class="label">Application</span>
+                    <span class="value" id="app-name">{{ .AppName }}</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Version</span>
+                    <span class="value" id="app-version">{{ .Version }}</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Environment</span>
+                    <span class="value" id="app-environment">{{ .Environment }}</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Hostname</span>
+                    <span class="value" id="app-hostname">{{ .Hostname }}</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Current Time</span>
+                    <span class="value" id="app-time">{{ .CurrentTime }}</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Uptime</span>
+                    <span class="value" id="app-uptime">{{ .Uptime }}</span>
+                </div>
+
+            </div>
+
+            <!-- Kubernetes -->
+
+            <div class="card">
+
+                <h2>☸ Kubernetes</h2>
+
+                <div class="item">
+                    <span class="label">Pod</span>
+                    <span class="value" id="k8s-pod">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Namespace</span>
+                    <span class="value" id="k8s-namespace">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Node</span>
+                    <span class="value" id="k8s-node">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Pod IP</span>
+                    <span class="value" id="k8s-podip">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Host IP</span>
+                    <span class="value" id="k8s-hostip">--</span>
+                </div>
+
+            </div>
+
+            <!-- CI/CD -->
+
+            <div class="card">
+
+                <h2>⚙ CI/CD</h2>
+
+                <div class="item">
+                    <span class="label">Version</span>
+                    <span class="value" id="build-version">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Git Commit</span>
+                    <span class="value" id="git-commit">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Git Branch</span>
+                    <span class="value" id="git-branch">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Build Time</span>
+                    <span class="value" id="build-time">--</span>
+                </div>
+
+            </div>
+
+            <!-- Runtime -->
+
+            <div class="card">
+
+                <h2>💻 Runtime</h2>
+
+                <div class="item">
+                    <span class="label">Go Version</span>
+                    <span class="value" id="runtime-go">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">OS</span>
+                    <span class="value" id="runtime-os">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Architecture</span>
+                    <span class="value" id="runtime-arch">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">CPU</span>
+                    <span class="value" id="runtime-cpu">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Goroutines</span>
+                    <span class="value" id="runtime-goroutines">--</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Memory</span>
+                    <span class="value" id="runtime-memory">--</span>
+                </div>
+
+            </div>
+
+            <!-- Observability -->
+
+            <div class="card">
+
+                <h2>📊 Observability</h2>
+
+                <div class="item">
+                    <span class="label">Prometheus</span>
+                    <span class="value">Configured</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Grafana</span>
+                    <span class="value">Configured</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Logging</span>
+                    <span class="value">EFK Stack</span>
+                </div>
+
+                <div class="item">
+                    <span class="label">Tracing</span>
+                    <span class="value">Jaeger</span>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer>
+
+        <p>Cloud Native DevOps Dashboard</p>
+
+        <p>
+            Powered by Go • Docker • Kubernetes • Jenkins • Prometheus • Grafana
+        </p>
+
+    </footer>
+
+    <script src="/static/js/dashboard.js"></script>
+
+</body>
+
+</html>

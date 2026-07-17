@@ -1,0 +1,7 @@
+---
+- name: Install Trivy
+  hosts: jenkins
+  become: yes
+
+  roles:
+    - trivy
