@@ -26,6 +26,7 @@ pipeline {
                     echo "===== Repository ====="
                     pwd
                     ls -lah
+
                     echo
                     echo "===== Git Commit ====="
                     git log --oneline -1
@@ -52,10 +53,6 @@ pipeline {
                     trivy --version
 
                     echo
-                    echo "===== Go ====="
-                    go version
-
-                    echo
                     echo "===== Git ====="
                     git --version
                 '''
@@ -65,6 +62,7 @@ pipeline {
         stage('Verify Kubernetes Access') {
             steps {
                 sh '''
+                    echo "===== Kubernetes Cluster ====="
                     kubectl get nodes
                 '''
             }
@@ -78,11 +76,11 @@ pipeline {
         }
 
         success {
-            echo 'Pipeline completed successfully.'
+            echo "Pipeline completed successfully."
         }
 
         failure {
-            echo 'Pipeline failed.'
+            echo "Pipeline failed."
         }
     }
 }
