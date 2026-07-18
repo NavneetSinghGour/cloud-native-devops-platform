@@ -28,6 +28,9 @@ spec:
           ports:
             - containerPort: {{ .Values.containerPort }}
 
+          resources:
+{{ toYaml .Values.resources | nindent 12 }}
+
           env:
             - name: APP_NAME
               value: "DevOps Dashboard"

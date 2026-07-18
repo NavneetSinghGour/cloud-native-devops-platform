@@ -18,6 +18,9 @@ pipeline {
         LOCAL_IMAGE     = "${APP_NAME}:${IMAGE_TAG}"
         REMOTE_IMAGE    = "${IMAGE_NAME}:${IMAGE_TAG}"
         LATEST_IMAGE    = "${IMAGE_NAME}:latest"
+
+        HELM_RELEASE    = "devops-dashboard"
+        K8S_NAMESPACE   = "devops-dashboard"
     }
 
     stages {
@@ -31,16 +34,14 @@ pipeline {
         stage('Repository Information') {
             steps {
                 sh '''
-                    echo "================================================="
+                    echo "========================================="
                     echo "Repository Information"
-                    echo "================================================="
+                    echo "========================================="
 
                     pwd
                     ls -lah
 
                     echo
-                    echo "Latest Commit"
-
                     git log --oneline -1
                 '''
             }
@@ -49,28 +50,14 @@ pipeline {
         stage('Verify Environment') {
             steps {
                 sh '''
-                    echo "================================================="
-                    echo "Verifying Environment"
-                    echo "================================================="
+                    echo "========================================="
+                    echo "Verify Environment"
+                    echo "========================================="
 
-                    echo
-                    echo "Docker"
                     docker --version
-
-                    echo
-                    echo "Kubectl"
                     kubectl version --client
-
-                    echo
-                    echo "Helm"
                     helm version
-
-                    echo
-                    echo "Trivy"
                     trivy --version
-
-                    echo
-                    echo "Git"
                     git --version
                 '''
             }
@@ -79,9 +66,9 @@ pipeline {
         stage('Verify Kubernetes Access') {
             steps {
                 sh '''
-                    echo "================================================="
+                    echo "========================================="
                     echo "Kubernetes Cluster"
-                    echo "================================================="
+                    echo "========================================="
 
                     kubectl get nodes
                 '''
@@ -91,13 +78,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                    echo "================================================="
-                    echo "Building Docker Image"
-                    echo "================================================="
+                    echo "========================================="
+                    echo "Build Docker Image"
+                    echo "========================================="
 
-                    docker build \
-                        -t ${LOCAL_IMAGE} \
-                        .
+                    docker build -t ${LOCAL_IMAGE} .
                 '''
             }
         }
@@ -105,15 +90,15 @@ pipeline {
         stage('Scan Docker Image (Trivy)') {
             steps {
                 sh '''
-                    echo "================================================="
-                    echo "Scanning Docker Image"
-                    echo "================================================="
+                    echo "========================================="
+                    echo "Trivy Scan"
+                    echo "========================================="
 
                     trivy image \
-                        --scanners vuln \
-                        --severity HIGH,CRITICAL \
-                        --exit-code 0 \
-                        ${LOCAL_IMAGE}
+                      --scanners vuln \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 0 \
+                      ${LOCAL_IMAGE}
                 '''
             }
         }
@@ -127,13 +112,9 @@ pipeline {
                 )]) {
 
                     sh '''
-                        echo "================================================="
-                        echo "Docker Hub Login"
-                        echo "================================================="
-
                         echo "$DOCKER_PASS" | docker login \
-                            -u "$DOCKER_USER" \
-                            --password-stdin
+                        -u "$DOCKER_USER" \
+                        --password-stdin
                     '''
                 }
             }
@@ -142,21 +123,14 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
-                    echo "================================================="
-                    echo "Tagging Docker Images"
-                    echo "================================================="
+                    echo "========================================="
+                    echo "Push Docker Images"
+                    echo "========================================="
 
                     docker tag ${LOCAL_IMAGE} ${REMOTE_IMAGE}
                     docker tag ${LOCAL_IMAGE} ${LATEST_IMAGE}
 
-                    echo
-                    echo "Pushing Build Tag"
-
                     docker push ${REMOTE_IMAGE}
-
-                    echo
-                    echo "Pushing Latest Tag"
-
                     docker push ${LATEST_IMAGE}
 
                     docker logout
@@ -164,19 +138,81 @@ pipeline {
             }
         }
 
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh '''
+                    echo "========================================="
+                    echo "Deploying with Helm"
+                    echo "========================================="
+
+                    helm upgrade --install ${HELM_RELEASE} ./helm \
+                      --namespace ${K8S_NAMESPACE} \
+                      --create-namespace \
+                      --set image.repository=${IMAGE_NAME} \
+                      --set image.tag=${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('Wait For Rollout') {
+            steps {
+                sh '''
+                    echo "========================================="
+                    echo "Waiting for Rollout"
+                    echo "========================================="
+
+                    kubectl rollout status deployment/${HELM_RELEASE} \
+                      -n ${K8S_NAMESPACE} \
+                      --timeout=300s
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                sh '''
+                    kubectl get deployment -n ${K8S_NAMESPACE}
+                    kubectl get pods -o wide -n ${K8S_NAMESPACE}
+                '''
+            }
+        }
+
+        stage('Verify Service') {
+            steps {
+                sh '''
+                    kubectl get svc -n ${K8S_NAMESPACE}
+                '''
+            }
+        }
+
+        stage('Verify Ingress') {
+            steps {
+                sh '''
+                    kubectl get ingress -n ${K8S_NAMESPACE}
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                sh '''
+                    kubectl get all -n ${K8S_NAMESPACE}
+                '''
+            }
+        }
     }
 
     post {
 
         success {
             echo "========================================="
-            echo "CI Pipeline completed successfully."
+            echo "CI/CD Pipeline completed successfully."
             echo "========================================="
         }
 
         failure {
             echo "========================================="
-            echo "CI Pipeline failed."
+            echo "Pipeline failed."
             echo "========================================="
         }
 
