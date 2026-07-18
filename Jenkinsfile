@@ -9,9 +9,19 @@ pipeline {
     }
 
     environment {
-        APP_NAME = "devops-dashboard"
+        APP_NAME        = "devops-dashboard"
+
         DOCKER_USERNAME = "navneet2004"
-        IMAGE_NAME = "navneet2004/devops-dashboard"
+
+        IMAGE_NAME      = "${DOCKER_USERNAME}/devops-dashboard"
+
+        IMAGE_TAG       = "${BUILD_NUMBER}"
+
+        LOCAL_IMAGE     = "${APP_NAME}:${IMAGE_TAG}"
+
+        REMOTE_IMAGE    = "${IMAGE_NAME}:${IMAGE_TAG}"
+
+        LATEST_IMAGE    = "${IMAGE_NAME}:latest"
     }
 
     stages {
@@ -26,11 +36,15 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Repository ====="
+
                     pwd
+
                     ls -lah
 
                     echo
+
                     echo "===== Latest Commit ====="
+
                     git log --oneline -1
                 '''
             }
@@ -40,22 +54,31 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Docker ====="
+
                     docker --version
 
                     echo
+
                     echo "===== Kubectl ====="
+
                     kubectl version --client
 
                     echo
+
                     echo "===== Helm ====="
+
                     helm version
 
                     echo
+
                     echo "===== Trivy ====="
+
                     trivy --version
 
                     echo
+
                     echo "===== Git ====="
+
                     git --version
                 '''
             }
@@ -65,6 +88,7 @@ pipeline {
             steps {
                 sh '''
                     echo "===== Kubernetes Cluster ====="
+
                     kubectl get nodes
                 '''
             }
@@ -76,13 +100,27 @@ pipeline {
                     echo "===== Building Docker Image ====="
 
                     docker build \
-                        -t ${APP_NAME}:${BUILD_NUMBER} \
+                        -t ${LOCAL_IMAGE} \
                         .
                 '''
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Scan Docker Image (Trivy)') {
+            steps {
+                sh '''
+                    echo "===== Scanning Docker Image ====="
+
+                    trivy image \
+                        --scanners vuln \
+                        --severity HIGH,CRITICAL \
+                        --exit-code 1 \
+                        ${LOCAL_IMAGE}
+                '''
+            }
+        }
+
+        stage('Authenticate Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -91,20 +129,41 @@ pipeline {
                 )]) {
 
                     sh '''
-                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "===== Docker Login ====="
 
-                        docker tag \
-                            ${APP_NAME}:${BUILD_NUMBER} \
-                            ${IMAGE_NAME}:${BUILD_NUMBER}
-
-                        docker push ${IMAGE_NAME}:${BUILD_NUMBER}
-
-                        docker logout
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
                     '''
                 }
             }
         }
 
+        stage('Push Docker Image') {
+            steps {
+                sh '''
+                    echo "===== Tagging Docker Images ====="
+
+                    docker tag ${LOCAL_IMAGE} ${REMOTE_IMAGE}
+
+                    docker tag ${LOCAL_IMAGE} ${LATEST_IMAGE}
+
+                    echo
+
+                    echo "===== Pushing Build Image ====="
+
+                    docker push ${REMOTE_IMAGE}
+
+                    echo
+
+                    echo "===== Pushing Latest Image ====="
+
+                    docker push ${LATEST_IMAGE}
+
+                    docker logout
+                '''
+            }
+        }
     }
 
     post {
@@ -114,11 +173,15 @@ pipeline {
         }
 
         success {
-            echo "Pipeline completed successfully."
+            echo "======================================="
+            echo "CI Pipeline completed successfully."
+            echo "======================================="
         }
 
         failure {
-            echo "Pipeline failed."
+            echo "======================================="
+            echo "CI Pipeline failed."
+            echo "======================================="
         }
     }
 }
