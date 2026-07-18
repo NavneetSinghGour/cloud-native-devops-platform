@@ -1,12 +1,12 @@
 [jenkins]
-jenkins-server ansible_host=13.233.64.163
+jenkins-server ansible_host=13.201.50.128
 
 [kubernetes_master]
-master ansible_host=35.154.57.254
+master ansible_host=65.0.85.34
 
 [kubernetes_workers]
-worker1 ansible_host=15.207.116.106
-worker2 ansible_host=13.233.121.79
+worker1 ansible_host=65.0.124.107
+worker2 ansible_host=13.204.45.83
 
 [kubernetes:children]
 kubernetes_master

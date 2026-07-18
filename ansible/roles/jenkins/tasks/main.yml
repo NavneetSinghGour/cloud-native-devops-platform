@@ -63,3 +63,28 @@
   systemd:
     name: jenkins
     state: restarted
+
+- name: Wait for Jenkins to initialize
+  wait_for:
+    path: /var/lib/jenkins/secrets/initialAdminPassword
+    timeout: 300
+
+- name: Read Jenkins initial admin password
+  slurp:
+    src: /var/lib/jenkins/secrets/initialAdminPassword
+  register: jenkins_admin_password
+
+- name: Get Jenkins server IP
+  command: hostname -I
+  register: jenkins_ip
+  changed_when: false
+
+- name: Display Jenkins information
+  debug:
+    msg:
+      - "======================================================="
+      - "Jenkins has been installed successfully."
+      - "Jenkins URL      : http://{{ jenkins_ip.stdout.split()[0] }}:8080"
+      - "Username         : admin"
+      - "Admin Password   : {{ jenkins_admin_password.content | b64decode | trim }}"
+      - "======================================================="
