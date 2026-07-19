@@ -1,1 +1,28 @@
+# Ansible
 ansible/inventory/hosts.ini
+
+# Go
+bin/
+*.exe
+*.test
+coverage.out
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/

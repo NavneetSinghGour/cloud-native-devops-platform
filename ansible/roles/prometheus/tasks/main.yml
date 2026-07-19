@@ -1,0 +1,52 @@
+---
+- name: Copy Prometheus values file
+  copy:
+    src: values.yaml
+    dest: /tmp/prometheus-values.yaml
+    mode: "0644"
+
+- name: Add Prometheus Helm repository
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: >
+    helm repo add prometheus-community
+    https://prometheus-community.github.io/helm-charts
+  register: prometheus_repo
+  changed_when: "'already exists' not in prometheus_repo.stderr"
+  failed_when: false
+
+- name: Update Helm repositories
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: helm repo update
+
+- name: Install Prometheus Stack
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: >
+    helm upgrade --install prometheus
+    prometheus-community/kube-prometheus-stack
+    --namespace observability
+    --create-namespace
+    -f /tmp/prometheus-values.yaml
+    --wait
+    --timeout 15m
+
+- name: Verify Prometheus Pods
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: kubectl get pods -n observability
+  register: prometheus_pods
+  changed_when: false
+
+- name: Show Prometheus Status
+  debug:
+    var: prometheus_pods.stdout_lines

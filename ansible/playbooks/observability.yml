@@ -1,0 +1,9 @@
+---
+- name: Deploy Observability Stack
+  hosts: jenkins
+  become: yes
+
+  roles:
+    - otel-collector
+    - jaeger
+    - prometheus

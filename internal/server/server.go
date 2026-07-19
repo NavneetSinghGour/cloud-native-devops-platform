@@ -6,6 +6,7 @@ import (
 
 	"github.com/NavneetSinghGour/devops-dashboard/internal/config"
 	"github.com/NavneetSinghGour/devops-dashboard/internal/router"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type Server struct {
@@ -18,8 +19,11 @@ func New(cfg config.Config) *Server {
 
 	return &Server{
 		httpServer: &http.Server{
-			Addr:         ":" + cfg.Port,
-			Handler:      nil,
+			Addr: ":" + cfg.Port,
+			Handler: otelhttp.NewHandler(
+				http.DefaultServeMux,
+				"http-server",
+			),
 			ReadTimeout:  10 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  60 * time.Second,

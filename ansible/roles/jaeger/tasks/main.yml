@@ -1,0 +1,78 @@
+---
+- name: Copy Jaeger values file
+  copy:
+    src: values.yaml
+    dest: /tmp/jaeger-values.yaml
+    mode: "0644"
+
+- name: Copy Jaeger NodePort manifest
+  copy:
+    src: jaeger-nodeport.yaml
+    dest: /tmp/jaeger-nodeport.yaml
+    mode: "0644"
+
+- name: Add Jaeger Helm repository
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: >
+    helm repo add jaegertracing
+    https://jaegertracing.github.io/helm-charts
+  register: jaeger_repo
+  changed_when: "'already exists' not in jaeger_repo.stderr"
+  failed_when: false
+
+- name: Update Helm repositories
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: helm repo update
+
+- name: Install Jaeger
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: >
+    helm upgrade --install jaeger
+    jaegertracing/jaeger
+    --namespace observability
+    --create-namespace
+    -f /tmp/jaeger-values.yaml
+    --wait
+    --timeout 10m
+
+- name: Apply Jaeger NodePort Service
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: kubectl apply -f /tmp/jaeger-nodeport.yaml
+
+- name: Verify Jaeger pods
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: kubectl get pods -n observability
+  register: jaeger_pods
+  changed_when: false
+
+- name: Verify Jaeger Service
+  become: true
+  become_user: jenkins
+  environment:
+    KUBECONFIG: /var/lib/jenkins/.kube/config
+  command: kubectl get svc -n observability
+  register: jaeger_service
+  changed_when: false
+
+- name: Show Jaeger status
+  debug:
+    var: jaeger_pods.stdout_lines
+
+- name: Show Jaeger services
+  debug:
+    var: jaeger_service.stdout_lines

@@ -1,0 +1,40 @@
+mode: deployment
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc: {}
+        http: {}
+
+  processors:
+    batch: {}
+
+  exporters:
+    debug:
+      verbosity: detailed
+
+    otlp:
+      endpoint: jaeger.observability.svc.cluster.local:4317
+      tls:
+        insecure: true
+
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [otlp]
+
+      metrics:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [debug]
+
+      logs:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [debug]
