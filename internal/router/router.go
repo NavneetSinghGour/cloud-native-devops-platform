@@ -5,10 +5,13 @@ import (
 
 	"github.com/NavneetSinghGour/devops-dashboard/internal/handlers"
 	"github.com/NavneetSinghGour/devops-dashboard/internal/middleware"
+	"github.com/NavneetSinghGour/devops-dashboard/internal/metrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func RegisterRoutes() {
+
+	metrics.Init()
 
 	mux := http.NewServeMux()
 
@@ -19,12 +22,12 @@ func RegisterRoutes() {
 	// Dashboard
 	mux.HandleFunc("/", handlers.Dashboard)
 
-	// Health Endpoints
+	// Health
 	mux.HandleFunc("/health", handlers.Health)
 	mux.HandleFunc("/ready", handlers.Health)
 	mux.HandleFunc("/live", handlers.Health)
 
-	// Prometheus Metrics
+	// Metrics
 	mux.Handle("/metrics", promhttp.Handler())
 
 	// APIs
@@ -33,6 +36,8 @@ func RegisterRoutes() {
 	mux.HandleFunc("/api/runtime", handlers.RuntimeInfo)
 	mux.HandleFunc("/api/kubernetes", handlers.KubernetesInfo)
 
-	// Middleware
-	http.Handle("/", middleware.Logging(mux))
+	// Middleware chain
+	http.Handle("/", middleware.Logging(
+		middleware.Metrics(mux),
+	))
 }
