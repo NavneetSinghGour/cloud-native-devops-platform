@@ -7,3 +7,4 @@
     - otel-collector
     - jaeger
     - prometheus
+    - servicemonitor

@@ -1,0 +1,26 @@
+---
+- name: Copy ServiceMonitor manifest
+  copy:
+    src: servicemonitor.yaml
+    dest: /tmp/servicemonitor.yaml
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+
+- name: Apply ServiceMonitor
+  become: true
+  become_user: jenkins
+  command: kubectl apply -f /tmp/servicemonitor.yaml
+  register: apply_result
+  changed_when: "'created' in apply_result.stdout or 'configured' in apply_result.stdout"
+
+- name: Verify ServiceMonitor
+  become: true
+  become_user: jenkins
+  command: kubectl get servicemonitor -n devops-dashboard
+  register: servicemonitor_output
+  changed_when: false
+
+- name: Show ServiceMonitor
+  debug:
+    var: servicemonitor_output.stdout_lines
