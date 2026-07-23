@@ -20,3 +20,16 @@ resources:
   limits:
     cpu: "500m"
     memory: "512Mi"
+
+serviceMonitor:
+  enabled: true
+
+  interval: 15s
+
+  scrapeTimeout: 10s
+
+  path: /metrics
+
+  namespace: ""
+
+  labels: {}

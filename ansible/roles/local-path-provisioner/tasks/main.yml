@@ -1,0 +1,29 @@
+---
+- name: Copy Local Path Provisioner manifest
+  copy:
+    src: local-path-storage.yaml
+    dest: /tmp/local-path-storage.yaml
+    mode: "0644"
+
+- name: Install Local Path Provisioner
+  become: true
+  become_user: jenkins
+  shell: |
+    kubectl apply -f /tmp/local-path-storage.yaml
+
+- name: Wait for Local Path Provisioner rollout
+  become: true
+  become_user: jenkins
+  shell: |
+    kubectl rollout status deployment/local-path-provisioner \
+      -n local-path-storage \
+      --timeout=300s
+
+- name: Wait for StorageClass to be created
+  become: true
+  become_user: jenkins
+  shell: |
+    kubectl wait \
+      --for=jsonpath='{.metadata.name}'=local-path \
+      storageclass/local-path \
+      --timeout=120s

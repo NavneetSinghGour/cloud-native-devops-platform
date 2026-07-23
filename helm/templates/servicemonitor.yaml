@@ -1,0 +1,29 @@
+{{- if .Values.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Release.Namespace }}
+
+  labels:
+    app: {{ .Chart.Name }}
+{{- with .Values.serviceMonitor.labels }}
+{{ toYaml . | nindent 4 }}
+{{- end }}
+
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+
+  namespaceSelector:
+    matchNames:
+      - {{ default .Release.Namespace .Values.serviceMonitor.namespace }}
+
+  endpoints:
+    - port: http
+      path: {{ .Values.serviceMonitor.path }}
+      interval: {{ .Values.serviceMonitor.interval }}
+      scrapeTimeout: {{ .Values.serviceMonitor.scrapeTimeout }}
+{{- end }}

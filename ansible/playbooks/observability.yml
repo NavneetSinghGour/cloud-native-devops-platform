@@ -4,12 +4,11 @@
   become: yes
 
   roles:
-    - { role: openebs, tags: ["openebs"] }
+    - { role: local-path-provisioner, tags: ["storage"] }
     - { role: otel-collector, tags: ["otel"] }
     - { role: jaeger, tags: ["jaeger"] }
     - { role: prometheus, tags: ["prometheus"] }
-    - { role: servicemonitor, tags: ["servicemonitor"] }
     - { role: grafana, tags: ["grafana"] }
     - { role: elasticsearch, tags: ["elasticsearch"] }
     - { role: kibana, tags: ["kibana"] }
-    - { role: fluent-bit, tags: ["fluent-bit"] } 
+    - { role: fluent-bit, tags: ["fluent-bit"] }
